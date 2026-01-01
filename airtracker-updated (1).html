@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirTracker - Military Accomplishment Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+    <div class="max-w-2xl mx-auto p-4">
+        <!-- Header -->
+        <div class="text-center mb-8 pt-8">
+            <div class="flex items-center justify-center mb-4">
+                <svg class="w-12 h-12 text-blue-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                </svg>
+                <h1 class="text-4xl font-bold">AirTracker</h1>
+            </div>
+            <p class="text-blue-200">Never forget your wins again</p>
+            <p class="text-sm text-slate-400 mt-2"><span id="entryCount">0</span> accomplishments logged</p>
+        </div>
+
+        <!-- Quick Log Input -->
+        <div class="bg-slate-800/50 backdrop-blur rounded-xl p-6 mb-6 border border-slate-700">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Log an Accomplishment
+            </h2>
+
+            <!-- Category Selection -->
+            <div class="grid grid-cols-2 gap-2 mb-4" id="categoryButtons">
+                <button data-category="performance" class="category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 bg-blue-500 shadow-lg scale-105">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Job Performance</span>
+                </button>
+                <button data-category="leadership" class="category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 bg-slate-700 hover:bg-slate-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Leadership</span>
+                </button>
+                <button data-category="training" class="category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 bg-slate-700 hover:bg-slate-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Self-Improvement</span>
+                </button>
+                <button data-category="other" class="category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 bg-slate-700 hover:bg-slate-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Other</span>
+                </button>
+            </div>
+
+            <!-- Text Input -->
+            <textarea
+                id="entryInput"
+                placeholder="What did you accomplish? (e.g., 'Fixed hydraulic leak on B-52, saved 4 hours downtime')"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 mb-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows="3"
+            ></textarea>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-2">
+                <button
+                    id="voiceBtn"
+                    class="flex-1 py-3 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700"
+                >
+                    <svg id="micIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                    </svg>
+                    <span id="voiceText">Voice Input</span>
+                </button>
+                
+                <button
+                    id="saveBtn"
+                    class="flex-1 bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span>Save Entry</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Generate EPB Button -->
+        <button
+            id="generateBtn"
+            class="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 py-4 rounded-xl font-bold text-lg mb-6 transition-all flex items-center justify-center space-x-2 shadow-xl hidden"
+        >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span id="generateText">🚀 Generate EPB Draft</span>
+        </button>
+
+        <!-- Generated Bullets Display -->
+        <div id="generatedSection" class="bg-green-900/30 border-2 border-green-500 rounded-xl p-6 mb-6 hidden">
+            <h3 class="text-2xl font-bold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                </svg>
+                Generated EPB Bullets
+            </h3>
+            <div id="bulletsContent"></div>
+        </div>
+
+        <!-- Timeline -->
+        <div>
+            <h3 class="text-xl font-semibold flex items-center mb-4">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Your Accomplishment Timeline
+            </h3>
+            
+            <div id="timeline" class="space-y-3">
+                <div class="bg-slate-800/30 rounded-lg p-8 text-center">
+                    <p class="text-slate-400">No accomplishments logged yet.</p>
+                    <p class="text-sm text-slate-500 mt-2">Start tracking your wins above!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 pb-8 text-center text-sm text-slate-500">
+            <p>Built for Airmen, by Airmen 🇺🇸</p>
+            <p class="mt-1">Data stored locally on your device</p>
+        </div>
+    </div>
+
+    <script>
+        // Backend API URL (temporarily using CORS proxy for testing)
+        const BACKEND_URL = 'https://airtracker-backend-i60u2uebc-jimmy-ardis-s-projects.vercel.app/api/generate-bullets';
+        const API_URL = `https://corsproxy.io/?${encodeURIComponent(BACKEND_URL)}`;
+
+        // App State
+        let entries = [];
+        let selectedCategory = 'performance';
+        let isListening = false;
+        let recognition = null;
+
+        const categories = {
+            performance: { label: 'Job Performance', color: 'bg-blue-500', section: 'Section IV' },
+            leadership: { label: 'Leadership', color: 'bg-purple-500', section: 'Section VI' },
+            training: { label: 'Self-Improvement', color: 'bg-green-500', section: 'Section V' },
+            other: { label: 'Other', color: 'bg-orange-500', section: 'General' }
+        };
+
+        // Initialize
+        function init() {
+            loadEntries();
+            setupCategoryButtons();
+            setupVoiceRecognition();
+            setupEventListeners();
+            updateUI();
+        }
+
+        // Load from localStorage
+        function loadEntries() {
+            const saved = localStorage.getItem('milAccomplishments');
+            if (saved) {
+                entries = JSON.parse(saved);
+            }
+        }
+
+        // Save to localStorage
+        function saveEntries() {
+            localStorage.setItem('milAccomplishments', JSON.stringify(entries));
+        }
+
+        // Setup category buttons
+        function setupCategoryButtons() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedCategory = btn.dataset.category;
+                    updateCategoryButtons();
+                });
+            });
+        }
+
+        function updateCategoryButtons() {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                const cat = btn.dataset.category;
+                const isSelected = cat === selectedCategory;
+                const color = categories[cat].color;
+                
+                btn.className = `category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 ${
+                    isSelected ? color + ' shadow-lg scale-105' : 'bg-slate-700 hover:bg-slate-600'
+                }`;
+            });
+        }
+
+        // Setup voice recognition
+        function setupVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    const input = document.getElementById('entryInput');
+                    input.value = input.value + ' ' + transcript;
+                };
+                
+                recognition.onend = () => {
+                    isListening = false;
+                    updateVoiceButton();
+                };
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('voiceBtn').addEventListener('click', toggleVoice);
+            document.getElementById('saveBtn').addEventListener('click', saveEntry);
+            document.getElementById('generateBtn').addEventListener('click', generateBullets);
+        }
+
+        // Toggle voice input
+        function toggleVoice() {
+            if (!recognition) {
+                alert('Voice input not supported in this browser. Try Chrome or Edge.');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                isListening = true;
+                updateVoiceButton();
+            }
+        }
+
+        function updateVoiceButton() {
+            const btn = document.getElementById('voiceBtn');
+            const text = document.getElementById('voiceText');
+            
+            if (isListening) {
+                btn.className = 'flex-1 py-3 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 animate-pulse';
+                text.textContent = 'Stop Recording';
+            } else {
+                btn.className = 'flex-1 py-3 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700';
+                text.textContent = 'Voice Input';
+            }
+        }
+
+        // Save entry
+        function saveEntry() {
+            const input = document.getElementById('entryInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const newEntry = {
+                id: Date.now(),
+                text: text,
+                category: selectedCategory,
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleDateString()
+            };
+
+            entries.unshift(newEntry);
+            saveEntries();
+            input.value = '';
+            updateUI();
+        }
+
+        // Generate EPB bullets
+        async function generateBullets() {
+            if (entries.length === 0) {
+                alert('No accomplishments logged yet. Start tracking your wins first!');
+                return;
+            }
+
+            // Check if API URL is configured
+            if (API_URL.includes('YOUR-PROJECT-NAME')) {
+                alert('⚠️ Backend not configured yet!\n\nTo enable AI generation:\n1. Deploy the backend to Vercel\n2. Replace API_URL in this file with your Vercel URL\n\nFor now, you can keep logging accomplishments!');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const text = document.getElementById('generateText');
+            text.textContent = 'Generating...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ entries })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    throw new Error(`API returned ${response.status}: ${JSON.stringify(errorData)}`);
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                if (data.success) {
+                    if (data.bullets) {
+                        displayBullets(data.bullets);
+                    } else if (data.raw) {
+                        displayRawBullets(data.raw);
+                    }
+                } else {
+                    throw new Error('API returned unsuccessful response');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error generating bullets. Check console for details.\n\nMake sure your backend is deployed and API_URL is set correctly.');
+            } finally {
+                text.textContent = '🚀 Generate EPB Draft';
+                btn.disabled = false;
+            }
+        }
+
+        function displayBullets(bullets) {
+            const section = document.getElementById('generatedSection');
+            const content = document.getElementById('bulletsContent');
+            
+            let html = '<div class="space-y-6">';
+            
+            for (const [category, items] of Object.entries(bullets)) {
+                if (items && items.length > 0) {
+                    html += `<div>
+                        <h4 class="font-semibold text-lg mb-2 text-green-300 capitalize">${category}</h4>`;
+                    
+                    items.forEach(b => {
+                        const isValid = b.chars <= 115;
+                        html += `<div class="bg-slate-800 p-3 rounded mb-2">
+                            <p class="font-mono text-sm mb-1">${b.bullet}</p>
+                            <p class="text-xs text-slate-400">
+                                ${b.chars} chars ${isValid ? '✅' : '❌ TOO LONG'} | Source: ${b.source}
+                            </p>
+                        </div>`;
+                    });
+                    
+                    html += '</div>';
+                }
+            }
+            
+            html += '</div>';
+            content.innerHTML = html;
+            section.classList.remove('hidden');
+        }
+
+        function displayRawBullets(text) {
+            const section = document.getElementById('generatedSection');
+            const content = document.getElementById('bulletsContent');
+            content.innerHTML = `<pre class="whitespace-pre-wrap text-sm bg-slate-800 p-4 rounded">${text}</pre>`;
+            section.classList.remove('hidden');
+        }
+
+        // Update UI
+        function updateUI() {
+            // Update count
+            document.getElementById('entryCount').textContent = entries.length;
+            
+            // Show/hide generate button
+            const genBtn = document.getElementById('generateBtn');
+            if (entries.length > 0) {
+                genBtn.classList.remove('hidden');
+            } else {
+                genBtn.classList.add('hidden');
+            }
+            
+            // Update timeline
+            const timeline = document.getElementById('timeline');
+            
+            if (entries.length === 0) {
+                timeline.innerHTML = `
+                    <div class="bg-slate-800/30 rounded-lg p-8 text-center">
+                        <p class="text-slate-400">No accomplishments logged yet.</p>
+                        <p class="text-sm text-slate-500 mt-2">Start tracking your wins above!</p>
+                    </div>
+                `;
+            } else {
+                timeline.innerHTML = entries.map(entry => {
+                    const cat = categories[entry.category];
+                    return `
+                        <div class="bg-slate-800/50 backdrop-blur rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-all">
+                            <div class="flex items-start space-x-3">
+                                <div class="${cat.color} p-2 rounded-lg flex-shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-slate-100">${entry.text}</p>
+                                    <div class="flex items-center space-x-3 mt-2 text-xs text-slate-400">
+                                        <span>${entry.date}</span>
+                                        <span>•</span>
+                                        <span class="text-blue-400">${cat.label}</span>
+                                        <span>•</span>
+                                        <span class="text-slate-500">${cat.section}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
