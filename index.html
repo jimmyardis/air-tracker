@@ -63,7 +63,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        // Pointing directly to your Vercel Backend
+        // Pointing directly to your Vercel Backend (NO PROXY)
         const API_URL = 'https://airtracker-backend-i60u2uebc-jimmy-ardis-s-projects.vercel.app/api/generate-bullets';
         
         // --- STATE ---
@@ -127,6 +127,7 @@
             btn.disabled = true;
 
             try {
+                // DIRECT FETCH - NO PROXY
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
