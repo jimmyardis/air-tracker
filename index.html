@@ -24,11 +24,19 @@
                 <span id="entryCount" class="bg-slate-700 px-3 py-1 rounded-lg text-sm font-mono">0 Logged</span>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                <button onclick="setCategory('performance')" id="cat-performance" class="cat-btn p-3 rounded-xl border border-blue-500/50 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 transition">🚀 Mission</button>
-                <button onclick="setCategory('leadership')" id="cat-leadership" class="cat-btn p-3 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-purple-500/20 hover:text-purple-300 hover:border-purple-500/50 transition">👥 Leading</button>
-                <button onclick="setCategory('training')" id="cat-training" class="cat-btn p-3 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-green-500/20 hover:text-green-300 hover:border-green-500/50 transition">📚 Improve</button>
-                <button onclick="setCategory('other')" id="cat-other" class="cat-btn p-3 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-400 hover:bg-orange-500/20 hover:text-orange-300 hover:border-orange-500/50 transition">🔧 Other</button>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button onclick="setCategory('performance')" id="cat-performance" class="cat-btn p-4 rounded-xl border border-blue-500/50 bg-blue-500/10 text-blue-300 transition flex items-center justify-center font-semibold shadow-sm">
+                    Job Performance
+                </button>
+                <button onclick="setCategory('leadership')" id="cat-leadership" class="cat-btn p-4 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-400 transition flex items-center justify-center font-semibold">
+                    Leadership
+                </button>
+                <button onclick="setCategory('training')" id="cat-training" class="cat-btn p-4 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-400 transition flex items-center justify-center font-semibold">
+                    Self-Improvement
+                </button>
+                <button onclick="setCategory('other')" id="cat-other" class="cat-btn p-4 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-400 transition flex items-center justify-center font-semibold">
+                    Other
+                </button>
             </div>
 
             <textarea id="entryInput" placeholder="Brain dump here... (e.g. Fixed 3 jets, trained 2 airmen, saved 4 hours)" 
@@ -59,12 +67,19 @@
 
     <script>
         // --- CONFIGURATION ---
-        // Pointing directly to your Vercel Backend (NO PROXY)
         const API_URL = 'https://airtracker-backend-i60u2uebc-jimmy-ardis-s-projects.vercel.app/api/generate-bullets';
         
-        // --- STATE ---
-        // RESTORED KEY: 'milAccomplishments' so your old data comes back!
-        let entries = JSON.parse(localStorage.getItem('milAccomplishments') || '[]');
+        // --- DATA RESCUE MISSION ---
+        // We check BOTH spots where data might be hiding and combine them.
+        const oldData = JSON.parse(localStorage.getItem('milAccomplishments') || '[]');
+        const newData = JSON.parse(localStorage.getItem('at_entries') || '[]');
+        
+        // Merge and remove duplicates based on ID
+        let entries = [...oldData, ...newData].filter((v,i,a)=>a.findIndex(t=>(t.id === v.id))===i);
+        
+        // Save back to the main key so we don't lose anything
+        localStorage.setItem('milAccomplishments', JSON.stringify(entries));
+        
         let currentCat = 'performance';
 
         // --- INIT ---
@@ -74,22 +89,21 @@
         function setCategory(cat) {
             currentCat = cat;
             document.querySelectorAll('.cat-btn').forEach(b => {
-                b.className = 'cat-btn p-3 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-400 transition';
+                b.className = 'cat-btn p-4 rounded-xl border border-slate-600 bg-slate-700/50 text-slate-400 transition flex items-center justify-center font-semibold';
             });
             const activeMap = {
-                'performance': 'border-blue-500/50 bg-blue-500/10 text-blue-300',
-                'leadership': 'border-purple-500/50 bg-purple-500/10 text-purple-300',
-                'training': 'border-green-500/50 bg-green-500/10 text-green-300',
-                'other': 'border-orange-500/50 bg-orange-500/10 text-orange-300'
+                'performance': 'border-blue-500/50 bg-blue-500/10 text-blue-300 shadow-blue-900/20 shadow-lg scale-[1.02]',
+                'leadership': 'border-purple-500/50 bg-purple-500/10 text-purple-300 shadow-purple-900/20 shadow-lg scale-[1.02]',
+                'training': 'border-green-500/50 bg-green-500/10 text-green-300 shadow-green-900/20 shadow-lg scale-[1.02]',
+                'other': 'border-orange-500/50 bg-orange-500/10 text-orange-300 shadow-orange-900/20 shadow-lg scale-[1.02]'
             };
-            document.getElementById(`cat-${cat}`).className = `cat-btn p-3 rounded-xl transition ${activeMap[cat]}`;
+            document.getElementById(`cat-${cat}`).className = `cat-btn p-4 rounded-xl transition flex items-center justify-center font-semibold ${activeMap[cat]}`;
         }
 
         function saveEntry() {
             const txt = document.getElementById('entryInput').value.trim();
             if(!txt) return;
             
-            // Save using the OLD key so it matches your history
             entries.unshift({ id: Date.now(), text: txt, category: currentCat, date: new Date().toLocaleDateString() });
             localStorage.setItem('milAccomplishments', JSON.stringify(entries));
             document.getElementById('entryInput').value = '';
@@ -111,7 +125,7 @@
                 log.innerHTML = entries.map(e => `
                     <div class="bg-slate-800/50 p-3 rounded border border-slate-700 flex justify-between items-start">
                         <span class="text-slate-300">${e.text}</span>
-                        <span class="text-xs uppercase ml-3 px-2 py-1 rounded bg-slate-700 text-slate-400">${e.category}</span>
+                        <span class="text-xs uppercase ml-3 px-2 py-1 rounded bg-slate-700 text-slate-400 whitespace-nowrap">${e.category}</span>
                     </div>
                 `).join('');
             }
@@ -125,7 +139,6 @@
             btn.disabled = true;
 
             try {
-                // DIRECT FETCH - NO PROXY
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -172,9 +185,11 @@
                 `;
             };
 
-            area.innerHTML += renderSection('Mission', data.performance, 'text-blue-400');
+            // Mapping results back to your Original 4
+            area.innerHTML += renderSection('Job Performance', data.performance, 'text-blue-400');
             area.innerHTML += renderSection('Leadership', data.leadership, 'text-purple-400');
-            area.innerHTML += renderSection('Training/Whole Airman', data.training, 'text-green-400');
+            area.innerHTML += renderSection('Self-Improvement', data.training, 'text-green-400');
+            area.innerHTML += renderSection('Other', data.other, 'text-orange-400');
 
             // Scroll to results
             area.scrollIntoView({ behavior: 'smooth' });
