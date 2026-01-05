@@ -179,12 +179,58 @@
 
         <!-- Timeline -->
         <div>
-            <h3 class="text-xl font-semibold flex items-center mb-4">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                Your Accomplishment Timeline
-            </h3>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Your Accomplishment Timeline
+                </h3>
+                <button
+                    id="toggleFilterBtn"
+                    class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-all flex items-center space-x-2 text-sm"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    <span>Filter by Date</span>
+                </button>
+            </div>
+
+            <!-- Filter Panel -->
+            <div id="filterPanel" class="bg-slate-800/50 rounded-xl p-4 mb-4 border border-slate-700 hidden">
+                <!-- Quick Filters -->
+                <div class="mb-4">
+                    <p class="text-sm text-slate-400 mb-2">Quick Filters:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="applyQuickFilter('30days')" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-all">Last 30 Days</button>
+                        <button onclick="applyQuickFilter('3months')" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-all">Last 3 Months</button>
+                        <button onclick="applyQuickFilter('6months')" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-all">Last 6 Months</button>
+                        <button onclick="applyQuickFilter('year')" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-all">This Year</button>
+                        <button onclick="applyQuickFilter('all')" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-all">All Time</button>
+                    </div>
+                </div>
+
+                <!-- Custom Date Range -->
+                <div class="mb-4">
+                    <p class="text-sm text-slate-400 mb-2">Custom Range:</p>
+                    <div class="flex flex-wrap gap-2 items-end">
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="text-xs text-slate-500">From:</label>
+                            <input type="date" id="filterStartDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="text-xs text-slate-500">To:</label>
+                            <input type="date" id="filterEndDate" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button onclick="applyCustomFilter()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-all">Apply</button>
+                        <button onclick="clearFilter()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 rounded-lg text-sm transition-all">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Filter Status -->
+                <div id="filterStatus" class="text-sm text-blue-400 hidden"></div>
+            </div>
             
             <div id="timeline" class="space-y-3">
                 <div class="bg-slate-800/30 rounded-lg p-8 text-center">
@@ -212,6 +258,9 @@
         let editingCategory = 'performance';
         let isListening = false;
         let recognition = null;
+        let filterStartDate = null;
+        let filterEndDate = null;
+        let isFiltering = false;
 
         const categories = {
             performance: { label: 'Job Performance', color: 'bg-blue-500', section: 'Section IV' },
@@ -289,6 +338,7 @@
             document.getElementById('voiceBtn').addEventListener('click', toggleVoice);
             document.getElementById('saveBtn').addEventListener('click', saveEntry);
             document.getElementById('generateBtn').addEventListener('click', generateBullets);
+            document.getElementById('toggleFilterBtn').addEventListener('click', toggleFilterPanel);
             
             // Edit modal listeners
             document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
@@ -358,8 +408,14 @@
 
         // Generate EPB bullets
         async function generateBullets() {
-            if (entries.length === 0) {
-                alert('No accomplishments logged yet. Start tracking your wins first!');
+            const filteredEntries = getFilteredEntries();
+            
+            if (filteredEntries.length === 0) {
+                if (isFiltering) {
+                    alert('No accomplishments in the selected date range. Adjust your filter or clear it.');
+                } else {
+                    alert('No accomplishments logged yet. Start tracking your wins first!');
+                }
                 return;
             }
 
@@ -380,7 +436,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ entries })
+                    body: JSON.stringify({ entries: filteredEntries })
                 });
 
                 if (!response.ok) {
@@ -509,20 +565,120 @@
             }
         }
 
+        // Toggle filter panel
+        function toggleFilterPanel() {
+            const panel = document.getElementById('filterPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        // Apply quick filter
+        function applyQuickFilter(range) {
+            const now = new Date();
+            let start = null;
+            
+            switch(range) {
+                case '30days':
+                    start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+                    break;
+                case '3months':
+                    start = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                    break;
+                case '6months':
+                    start = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                    break;
+                case 'year':
+                    start = new Date(now.getFullYear(), 0, 1);
+                    break;
+                case 'all':
+                    clearFilter();
+                    return;
+            }
+            
+            filterStartDate = start;
+            filterEndDate = now;
+            isFiltering = true;
+            
+            // Update date inputs
+            document.getElementById('filterStartDate').valueAsDate = start;
+            document.getElementById('filterEndDate').valueAsDate = now;
+            
+            updateUI();
+            updateFilterStatus();
+        }
+
+        // Apply custom filter
+        function applyCustomFilter() {
+            const startInput = document.getElementById('filterStartDate').value;
+            const endInput = document.getElementById('filterEndDate').value;
+            
+            if (!startInput || !endInput) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            
+            filterStartDate = new Date(startInput);
+            filterEndDate = new Date(endInput);
+            filterEndDate.setHours(23, 59, 59); // Include full end date
+            isFiltering = true;
+            
+            updateUI();
+            updateFilterStatus();
+        }
+
+        // Clear filter
+        function clearFilter() {
+            filterStartDate = null;
+            filterEndDate = null;
+            isFiltering = false;
+            
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            document.getElementById('filterStatus').classList.add('hidden');
+            
+            updateUI();
+        }
+
+        // Update filter status message
+        function updateFilterStatus() {
+            const status = document.getElementById('filterStatus');
+            const filtered = getFilteredEntries();
+            
+            if (isFiltering) {
+                const startStr = filterStartDate.toLocaleDateString();
+                const endStr = filterEndDate.toLocaleDateString();
+                status.textContent = `Showing ${filtered.length} of ${entries.length} entries (${startStr} - ${endStr})`;
+                status.classList.remove('hidden');
+            } else {
+                status.classList.add('hidden');
+            }
+        }
+
+        // Get filtered entries
+        function getFilteredEntries() {
+            if (!isFiltering) return entries;
+            
+            return entries.filter(entry => {
+                const entryDate = new Date(entry.timestamp);
+                return entryDate >= filterStartDate && entryDate <= filterEndDate;
+            });
+        }
+
         // Update UI
         function updateUI() {
-            // Update count
+            // Update count - always show total
             document.getElementById('entryCount').textContent = entries.length;
+            
+            const filteredEntries = getFilteredEntries();
             
             // Show/hide generate button
             const genBtn = document.getElementById('generateBtn');
-            if (entries.length > 0) {
+            if (filteredEntries.length > 0) {
                 genBtn.classList.remove('hidden');
             } else {
                 genBtn.classList.add('hidden');
             }
             
-            // Update timeline
+            // Update timeline with filtered entries
             const timeline = document.getElementById('timeline');
             
             if (entries.length === 0) {
@@ -532,8 +688,15 @@
                         <p class="text-sm text-slate-500 mt-2">Start tracking your wins above!</p>
                     </div>
                 `;
+            } else if (filteredEntries.length === 0) {
+                timeline.innerHTML = `
+                    <div class="bg-slate-800/30 rounded-lg p-8 text-center">
+                        <p class="text-slate-400">No accomplishments in this date range.</p>
+                        <p class="text-sm text-slate-500 mt-2">Try adjusting your filter or click "All Time".</p>
+                    </div>
+                `;
             } else {
-                timeline.innerHTML = entries.map(entry => {
+                timeline.innerHTML = filteredEntries.map(entry => {
                     const cat = categories[entry.category];
                     return `
                         <div class="bg-slate-800/50 backdrop-blur rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-all">
