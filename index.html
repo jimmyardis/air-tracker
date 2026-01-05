@@ -120,6 +120,63 @@
             <div id="bulletsContent"></div>
         </div>
 
+        <!-- Edit Modal -->
+        <div id="editModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center z-50">
+            <div class="bg-slate-800 rounded-xl p-6 max-w-lg w-full mx-4 border border-slate-700">
+                <h3 class="text-xl font-bold mb-4">Edit Accomplishment</h3>
+                
+                <!-- Edit Category Selection -->
+                <div class="grid grid-cols-2 gap-2 mb-4" id="editCategoryButtons">
+                    <button data-category="performance" class="edit-category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 bg-slate-700 hover:bg-slate-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Job Performance</span>
+                    </button>
+                    <button data-category="leadership" class="edit-category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 bg-slate-700 hover:bg-slate-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Leadership</span>
+                    </button>
+                    <button data-category="training" class="edit-category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 bg-slate-700 hover:bg-slate-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Self-Improvement</span>
+                    </button>
+                    <button data-category="other" class="edit-category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 bg-slate-700 hover:bg-slate-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Other</span>
+                    </button>
+                </div>
+
+                <textarea
+                    id="editInput"
+                    class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 mb-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="4"
+                    placeholder="Edit your accomplishment..."
+                ></textarea>
+
+                <div class="flex space-x-2">
+                    <button
+                        id="saveEditBtn"
+                        class="flex-1 bg-green-600 hover:bg-green-700 py-3 rounded-lg font-semibold transition-all"
+                    >
+                        Save Changes
+                    </button>
+                    <button
+                        id="cancelEditBtn"
+                        class="flex-1 bg-slate-600 hover:bg-slate-700 py-3 rounded-lg font-semibold transition-all"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Timeline -->
         <div>
             <h3 class="text-xl font-semibold flex items-center mb-4">
@@ -151,6 +208,8 @@
         // App State
         let entries = [];
         let selectedCategory = 'performance';
+        let editingEntryId = null;
+        let editingCategory = 'performance';
         let isListening = false;
         let recognition = null;
 
@@ -230,6 +289,21 @@
             document.getElementById('voiceBtn').addEventListener('click', toggleVoice);
             document.getElementById('saveBtn').addEventListener('click', saveEntry);
             document.getElementById('generateBtn').addEventListener('click', generateBullets);
+            
+            // Edit modal listeners
+            document.getElementById('saveEditBtn').addEventListener('click', saveEdit);
+            document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+            document.getElementById('editModal').addEventListener('click', (e) => {
+                if (e.target.id === 'editModal') closeEditModal();
+            });
+            
+            // Edit category buttons
+            document.querySelectorAll('.edit-category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    editingCategory = btn.dataset.category;
+                    updateEditCategoryButtons();
+                });
+            });
         }
 
         // Toggle voice input
@@ -374,6 +448,67 @@
             section.classList.remove('hidden');
         }
 
+        // Edit entry
+        function editEntry(id) {
+            const entry = entries.find(e => e.id === id);
+            if (!entry) return;
+            
+            editingEntryId = id;
+            editingCategory = entry.category;
+            
+            document.getElementById('editInput').value = entry.text;
+            updateEditCategoryButtons();
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        // Update edit category buttons
+        function updateEditCategoryButtons() {
+            document.querySelectorAll('.edit-category-btn').forEach(btn => {
+                const cat = btn.dataset.category;
+                const isSelected = cat === editingCategory;
+                const color = categories[cat].color;
+                
+                btn.className = `edit-category-btn p-3 rounded-lg transition-all flex items-center justify-center space-x-2 ${
+                    isSelected ? color + ' shadow-lg scale-105' : 'bg-slate-700 hover:bg-slate-600'
+                }`;
+            });
+        }
+
+        // Save edited entry
+        function saveEdit() {
+            const newText = document.getElementById('editInput').value.trim();
+            if (!newText || !editingEntryId) return;
+            
+            const entry = entries.find(e => e.id === editingEntryId);
+            if (entry) {
+                entry.text = newText;
+                entry.category = editingCategory;
+                saveEntries();
+                updateUI();
+            }
+            
+            closeEditModal();
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editInput').value = '';
+            editingEntryId = null;
+        }
+
+        // Delete entry
+        function deleteEntry(id) {
+            const entry = entries.find(e => e.id === id);
+            if (!entry) return;
+            
+            if (confirm(`Delete this accomplishment?\n\n"${entry.text}"`)) {
+                entries = entries.filter(e => e.id !== id);
+                saveEntries();
+                updateUI();
+            }
+        }
+
         // Update UI
         function updateUI() {
             // Update count
@@ -408,7 +543,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                     </svg>
                                 </div>
-                                <div class="flex-1">
+                                <div class="flex-1 min-w-0">
                                     <p class="text-slate-100">${entry.text}</p>
                                     <div class="flex items-center space-x-3 mt-2 text-xs text-slate-400">
                                         <span>${entry.date}</span>
@@ -417,6 +552,18 @@
                                         <span>•</span>
                                         <span class="text-slate-500">${cat.section}</span>
                                     </div>
+                                </div>
+                                <div class="flex space-x-2 flex-shrink-0">
+                                    <button onclick="editEntry(${entry.id})" class="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all" title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteEntry(${entry.id})" class="p-2 rounded-lg bg-red-600 hover:bg-red-700 transition-all" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                         </div>
